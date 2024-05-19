@@ -1,59 +1,6 @@
 volumes:
   redis_data:
 services:
-  tor0:
-    container_name: tor0
-    image: tor_local
-    build:
-      context: .
-      dockerfile: ./Dockerfile.tor
-    restart: always
-    volumes: [./tor:/etc/tor]
-  tor1:
-    container_name: tor1
-    image: tor
-    restart: always
-    volumes: [./tor:/etc/tor]
-  tor2:
-    container_name: tor2
-    image: tor
-    restart: always
-    volumes: [./tor:/etc/tor]
-  tor3:
-    container_name: tor3
-    image: tor
-    restart: always
-    volumes: [./tor:/etc/tor]
-  tor4:
-    container_name: tor4
-    image: tor
-    restart: always
-    volumes: [./tor:/etc/tor]
-  tor5:
-    container_name: tor5
-    image: tor
-    restart: always
-    volumes: [./tor:/etc/tor]
-  tor6:
-    container_name: tor6
-    image: tor
-    restart: always
-    volumes: [./tor:/etc/tor]
-  tor7:
-    container_name: tor7
-    image: tor
-    restart: always
-    volumes: [./tor:/etc/tor]
-  tor8:
-    container_name: tor8
-    image: tor
-    restart: always
-    volumes: [./tor:/etc/tor]
-  tor9:
-    container_name: tor9
-    image: tor
-    restart: always
-    volumes: [./tor:/etc/tor]
   redis:
     container_name: redis
     image: docker.io/library/redis:alpine
@@ -67,8 +14,6 @@ services:
       - SETGID
       - SETUID
       - DAC_OVERRIDE
-    extra_hosts:
-      - host.docker.internal:host-gateway
   haproxy:
     container_name: haproxy
     image: haproxy:latest
@@ -78,7 +23,7 @@ services:
         - "9050:9050"
     volumes:
         - ./haproxy:/usr/local/etc/haproxy
-    depends_on: [tor0,tor1,tor2,tor3,tor4,tor5,tor6,tor7,tor8,tor9]
+    depends_on: [tor]
   searxng:
     container_name: searxng
     restart: always
@@ -90,7 +35,7 @@ services:
       - ./searxng:/etc/searxng
     ports:
       - 8080:8080
-    depends_on: [redis,tor0,tor1,tor2,tor3,tor4,tor5,tor6,tor7,tor8,tor9]
+    depends_on: [redis, morty, tor]
     environment:
       - SEARXNG_BASE_URL=http://${SEARXNG_HOSTNAME:-searxng}:8080/
     #  - SEARXNG_DEBUG=1
@@ -100,3 +45,25 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+  morty:
+    container_name: morty
+    image: ghcr.io/karmishin/morty:master
+    restart: always
+    command:
+      - "-listen=0.0.0.0:3000"
+      - "-socks5=socks5://haproxy:9050"
+      - "-timeout=10"
+    depends_on:
+      - haproxy
+    ports:
+      - "3000:3000"
+  tor:
+    image: tor_local
+    build:
+      context: .
+      dockerfile: ./Dockerfile.tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+    deploy:
+      mode: replicated
+      replicas: 9

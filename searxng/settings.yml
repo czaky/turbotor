@@ -52,18 +52,21 @@ outgoing:
   max_request_timeout: 30.0
   proxies:
     "all://":
-      - socks5h://tor0:9050
-      - socks5h://tor1:9050
-      - socks5h://tor2:9050
-      - socks5h://tor3:9050
-      - socks5h://tor4:9050
-      - socks5h://tor5:9050
-      - socks5h://tor6:9050
-      - socks5h://tor7:9050
-      - socks5h://tor8:9050
-      - socks5h://tor9:9050
+      - socks5h://turbotor-tor-1:9050
+      - socks5h://turbotor-tor-2:9050
+      - socks5h://turbotor-tor-3:9050
+      - socks5h://turbotor-tor-4:9050
+      - socks5h://turbotor-tor-5:9050
+      - socks5h://turbotor-tor-6:9050
+      - socks5h://turbotor-tor-7:9050
+      - socks5h://turbotor-tor-8:9050
+      - socks5h://turbotor-tor-9:9050
   retries: 3
   proxy_request_redundancy: 8
+result_proxy:
+  url: http://localhost:3000/
+  # [true|false] enable the "proxy" button next to each result
+  proxify_results: true
 engines:
   - name: wikidata
     timeout: 10.0
