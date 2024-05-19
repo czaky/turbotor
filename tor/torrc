@@ -1,0 +1,16 @@
+Log notice stdout
+DataDirectory /var/lib/tor
+PidFile /var/lib/tor/pid
+
+GeoIPFile /etc/tor/geoip
+GeoIPv6File /etc/tor/geoip6
+
+SocksPort 0.0.0.0:9050
+DNSPort   0.0.0.0:9053
+
+ExitNodes {us}
+EntryNodes {us}
+
+HardwareAccel 1
+AutomapHostsOnResolve 1
+AvoidDiskWrites 1

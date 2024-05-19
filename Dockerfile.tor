@@ -1,0 +1,33 @@
+# Build Image
+
+FROM alpine:latest AS build
+RUN apk --no-cache add build-base git automake autoconf libevent-static libevent-dev openssl-libs-static openssl-dev zlib-static libzip-dev nss-dev xz-dev zstd-dev
+RUN git clone https://git.torproject.org/tor.git
+WORKDIR /tor
+RUN echo $(git tag | sort -V | grep 'tor' | grep -v 'rc\|alpha\|dev' | tail -1) > .version
+RUN git checkout tags/$(cat .version) -b stable
+RUN ./autogen.sh
+RUN ./configure --disable-asciidoc --disable-manpage --disable-html-manual --disable-unittests --disable-dependency-tracking \
+    --enable-static-libevent --with-libevent-dir=/usr/lib
+RUN sed -i 's/DEFAULT_ROUTE_LEN 3/DEFAULT_ROUTE_LEN 2/' src/core/or/or.h
+RUN make -j`nproc`
+RUN make install
+
+# Final Image
+FROM alpine:latest
+
+LABEL maintainer "czaky"
+LABEL description "Tor Docker Image"
+
+RUN addgroup -S tor && adduser -S tor -G tor -D -H -h /var/lib/tor
+RUN mkdir /var/lib/tor && chown -R tor.tor /var/lib/tor && chmod -R 700 /var/lib/tor && \
+    mkdir /etc/tor && chown -R tor.tor /etc/tor && chmod -R u+rx /etc/tor
+VOLUME /var/lib/tor
+
+RUN apk --no-cache add xz-libs zstd-libs
+COPY --from=build /tor/.version /.version
+COPY --from=build /usr/local/bin/tor /usr/local/bin/tor
+
+USER tor
+ENTRYPOINT [ "/usr/local/bin/tor" ]
+CMD [ "-f", "/etc/tor/torrc" ]

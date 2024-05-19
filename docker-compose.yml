@@ -1,0 +1,102 @@
+volumes:
+  redis_data:
+services:
+  tor0:
+    container_name: tor0
+    image: tor_local
+    build:
+      context: .
+      dockerfile: ./Dockerfile.tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  tor1:
+    container_name: tor1
+    image: tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  tor2:
+    container_name: tor2
+    image: tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  tor3:
+    container_name: tor3
+    image: tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  tor4:
+    container_name: tor4
+    image: tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  tor5:
+    container_name: tor5
+    image: tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  tor6:
+    container_name: tor6
+    image: tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  tor7:
+    container_name: tor7
+    image: tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  tor8:
+    container_name: tor8
+    image: tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  tor9:
+    container_name: tor9
+    image: tor
+    restart: always
+    volumes: [./tor:/etc/tor]
+  redis:
+    container_name: redis
+    image: docker.io/library/redis:alpine
+    command: redis-server --save 30 1 --loglevel warning
+    restart: always
+    volumes:
+      - redis_data:/data
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  haproxy:
+    container_name: haproxy
+    image: haproxy:latest
+    restart: always
+    ports:
+        - "8404:8404"
+        - "9050:9050"
+    volumes:
+        - ./haproxy:/usr/local/etc/haproxy
+    depends_on: [tor0,tor1,tor2,tor3,tor4,tor5,tor6,tor7,tor8,tor9]
+  searxng:
+    container_name: searxng
+    restart: always
+    image: searxng_local # docker.io/searxng/searxng:latest
+    build:
+      context: .
+      dockerfile: ./Dockerfile.searxng
+    volumes:
+      - ./searxng:/etc/searxng
+    ports:
+      - 8080:8080
+    depends_on: [redis,tor0,tor1,tor2,tor3,tor4,tor5,tor6,tor7,tor8,tor9]
+    environment:
+      - SEARXNG_BASE_URL=http://${SEARXNG_HOSTNAME:-searxng}:8080/
+    #  - SEARXNG_DEBUG=1
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
