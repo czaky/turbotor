@@ -1,6 +1,7 @@
 FROM alpine:latest AS base_image
 
-RUN apk add --no-cache -t build-dependencies \
+RUN --mount=type=cache,sharing=locked,target=/var/cache/apk \
+    apk add --update -t build-dependencies \
         build-base \
         py3-setuptools \
         python3-dev \
@@ -10,7 +11,7 @@ RUN apk add --no-cache -t build-dependencies \
         openssl-dev \
         tar \
         git \
-    && apk add --no-cache \
+    && apk add \
         ca-certificates \
         su-exec \
         python3 \
@@ -31,7 +32,8 @@ RUN git clone --depth=1 https://github.com/czaky/searxng.git -b redundant_proxy_
 
 WORKDIR /searxng
 
-RUN pip3 install --break-system-packages --no-cache -r requirements.txt
+RUN --mount=type=cache,sharing=locked,target=/root/.cache \
+    pip3 install --break-system-packages -r requirements.txt
 
 ARG TIMESTAMP_SETTINGS=0
 ARG TIMESTAMP_UWSGI=0
@@ -77,16 +79,15 @@ WORKDIR /usr/local/searxng
 
 COPY --from=build_image /searxng/requirements.txt ./requirements.txt
 
-RUN pip3 install --break-system-packages --no-cache -r requirements.txt \
-    && apk del build-dependencies \
-    && rm -rf /root/.cache
+RUN --mount=type=cache,sharing=locked,target=/root/.cache \
+    pip3 install --break-system-packages -r requirements.txt
+RUN apk del build-dependencies
 
 COPY --from=build_image --chown=searxng:searxng /searxng/dockerfiles ./dockerfiles
 COPY --from=build_image --chown=searxng:searxng /searxng/searx ./searx
 
 RUN mkdir /etc/searxng \
     && chown -R searxng:searxng /etc/searxng
-
 
 ARG TIMESTAMP_SETTINGS=0
 ARG TIMESTAMP_UWSGI=0

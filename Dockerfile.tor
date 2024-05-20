@@ -1,7 +1,8 @@
 # Build Image
 
 FROM alpine:latest AS build
-RUN apk --no-cache add build-base git automake autoconf libevent-static libevent-dev openssl-libs-static openssl-dev zlib-static libzip-dev nss-dev xz-dev zstd-dev
+RUN --mount=type=cache,sharing=locked,target=/var/cache/apk \
+    apk --update add build-base git automake autoconf libevent-static libevent-dev openssl-libs-static openssl-dev zlib-static libzip-dev nss-dev xz-dev zstd-dev
 RUN git clone https://git.torproject.org/tor.git
 WORKDIR /tor
 RUN echo $(git tag | sort -V | grep 'tor' | grep -v 'rc\|alpha\|dev' | tail -1) > .version
@@ -24,7 +25,8 @@ RUN mkdir /var/lib/tor && chown -R tor.tor /var/lib/tor && chmod -R 700 /var/lib
     mkdir /etc/tor && chown -R tor.tor /etc/tor && chmod -R u+rx /etc/tor
 VOLUME /var/lib/tor
 
-RUN apk --no-cache add xz-libs zstd-libs
+RUN --mount=type=cache,sharing=locked,target=/var/cache/apk \
+    apk --update add xz-libs zstd-libs
 COPY --from=build /tor/.version /.version
 COPY --from=build /usr/local/bin/tor /usr/local/bin/tor
 
