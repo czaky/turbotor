@@ -159,6 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+pihole/pihole/migration_backup
 pihole/pihole/*.db
 pihole/pihole/gravity*
 pihole/pihole/list*
