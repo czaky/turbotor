@@ -21,6 +21,20 @@ engines being timed-out or being "suspended".
 DNS queries in the background using all of the TOR DNS proxies at once. This
 greatly speeds up the DNS lookup and the Pi-hole sever acts also as a local cache.
 
+## Privacy and Anonymity
+
+The setup here prevents IP tracking. It will **not** securely hide you inside the
+ocean of TOR users. In matter of fact it will make you stand out. The only way
+to capitalize on TOR is to use it with the TOR browser and follow the guidelines.
+
+The Entry/Exit node monitoring attack is made trivial by the approach here.
+We use only 2 hops circuits and we issue up to 10 requests at once. This means
+that any sophisticated analysis tool will be able with certainty find out,
+where those request are coming from and where those are going.
+
+I.e. there is a slight chance that we can obfuscate our source from unsophisticated
+trackers using only the IP based approach.
+
 ## Access ports
 
 - TOR is available as `tubotor-hostname`:9050
