@@ -160,6 +160,7 @@ cython_debug/
 #.idea/
 
 pihole/pihole/*.db
+pihole/pihole/gravity*
 pihole/pihole/list*
 pihole/pihole/*.list
 pihole/pihole/*.list
